@@ -162,13 +162,21 @@ class JurnalharianResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(),
+                Tables\Actions\ForceDeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('jh_tanggal', 'desc')
+            ->striped();
     }
 
     public static function getRelations(): array
@@ -181,9 +189,18 @@ class JurnalharianResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListJurnalharians::route('/'),
-            'create' => Pages\CreateJurnalharian::route('/create'),
-            'edit' => Pages\EditJurnalharian::route('/{record}/edit'),
+           'index' => Pages\ListJurnalHarians::route('/'),
+            'create' => Pages\CreateJurnalHarian::route('/create'),
+                
+            'edit' => Pages\EditJurnalHarian::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                \Illuminate\Database\Eloquent\SoftDeletingScope::class,
+            ]);
     }
 }
