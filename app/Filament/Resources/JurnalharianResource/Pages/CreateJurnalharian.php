@@ -9,4 +9,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateJurnalharian extends CreateRecord
 {
     protected static string $resource = JurnalharianResource::class;
+
+
 }

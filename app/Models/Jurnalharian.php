@@ -75,23 +75,23 @@ class Jurnalharian extends Model
 
 
 //agar semua inputan yang dipilih menjadi kapital guna kesamaan data
-    public function setJhNomorDokumenAttribute($value){
-        $this->attributes['jh_nomor_dokumen'] = Str::upper($value);
-    }
-    public function setJhNomorJurnalAttribute($value){
-        $this->attributes['jh_nomor_jurnal'] = Str::upper($value);
-    }
-    public function setJhNamaAccountAttribute($value){
-        $this->attributes['jh_nama_account'] = Str::upper($value);
-    }
-    public function setJhCodeDeptAttribute($value){
-        $this->attributes['jh_code_dept'] = Str::upper($value);
-    }
-    public function setJhDepartementtAttribute($value){
-        $this->attributes['jh_departemen'] = Str::upper($value);
+public function setJhNomorDokumenAttribute($value){
+    $this->attributes['jh_nomor_dokumen'] = strtoupper($value);
+}
+public function setJhNomorJurnalAttribute($value){
+    $this->attributes['jh_nomor_jurnal'] = strtoupper($value);
+}
+public function setJhNamaAccountAttribute($value){
+    $this->attributes['jh_nama_account'] = strtoupper($value);
+}
+public function setJhCodeDeptAttribute($value){
+    $this->attributes['jh_code_dept'] = strtoupper($value);
+}
+    public function setJhDepartemenAttribute($value){
+        $this->attributes['jh_departemen'] = strtoupper($value);
     }
     public function setJhPemohonAttribute($value){
-        $this->attributes['jh_pemohon'] = Str::upper($value);
+        $this->attributes['jh_pemohon'] = strtoupper($value);
     }
 
 

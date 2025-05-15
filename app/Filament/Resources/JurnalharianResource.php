@@ -14,6 +14,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
+
+
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+
 class JurnalharianResource extends Resource
 {
     protected static ?string $model = JurnalHarian::class;
@@ -44,6 +54,7 @@ class JurnalharianResource extends Resource
 
                         Forms\Components\TextInput::make('jh_nomor_jurnal')
                             ->label('NOMOR JURNAL')
+                            ->datalist(Jurnalharian::pluck('jh_nomor_jurnal')->toArray())
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(50)
@@ -65,6 +76,7 @@ class JurnalharianResource extends Resource
                             
                         Forms\Components\TextInput::make('jh_nama_account')
                             ->label('NAMA ACCOUNT')
+                            ->datalist(Jurnalharian::pluck('jh_nama_account')->toArray())
                             ->required()
                             ->maxLength(100)
                             ->columnSpan(2),
@@ -77,6 +89,7 @@ class JurnalharianResource extends Resource
                             
                         Forms\Components\TextInput::make('jh_departemen')
                             ->label('DEPARTEMEN')
+                            ->datalist(Jurnalharian::pluck('jh_departemen')->toArray())
                             ->required()
                             ->maxLength(100)
                             ->columnSpan(2),
@@ -99,6 +112,7 @@ class JurnalharianResource extends Resource
                             
                         Forms\Components\TextInput::make('jh_pemohon')
                             ->label('PEMOHON')
+                            ->datalist(Jurnalharian::pluck('jh_pemohon')->toArray())
                             ->required()
                             ->maxLength(100)
                             ->columnSpan(2),
@@ -123,17 +137,18 @@ class JurnalharianResource extends Resource
 
             Tables\Columns\TextColumn::make('jh_nomor_jurnal')
                 ->label('NOMOR JURNAL')
+
                 ->searchable(),
 
             Tables\Columns\TextColumn::make('jh_nama_account')
                 ->label('NAMA ACCOUNT')
-                ->searchable()
-                ->formatStateUsing(fn (string $state): string => Str::upper($state)),
+
+                ->searchable(),
 
             Tables\Columns\TextColumn::make('jh_departemen')
                 ->label('DEPARTEMEN')
-                ->searchable()
-                ->formatStateUsing(fn (string $state): string => Str::upper($state)),
+
+                ->searchable(),
 
             Tables\Columns\TextColumn::make('jh_dr')
                 ->label('DEBIT')
@@ -149,8 +164,8 @@ class JurnalharianResource extends Resource
 
             Tables\Columns\TextColumn::make('jh_pemohon')
                 ->label('PEMOHON')
-                ->searchable()
-                ->formatStateUsing(fn (string $state): string => Str::upper($state)),
+                
+                ->searchable(),
 
             Tables\Columns\TextColumn::make('created_at')
                 ->label('DIBUAT')
