@@ -17,7 +17,7 @@ return new class extends Migration
             
             // Field utama
             $table->date('jh_tanggal');
-            $table->string('jh_nomor_jurnal')->nullable()->unique();
+            $table->string('jh_nomor_jurnal')->nullable();
             $table->string('jh_nomor_dokumen')->nullable();
             $table->string('jh_code_account');
             $table->string('jh_nama_account');

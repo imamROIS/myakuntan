@@ -55,4 +55,12 @@ class AdminportalPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
+    protected function getResources(): array
+{
+    return [
+        \App\Filament\Resources\JurnalHarianResource::class,
+        // ... resource lainnya
+    ];
+}
+
 }

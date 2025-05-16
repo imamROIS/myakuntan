@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
+use Filament\Actions\ReplicateAction;
 
 
 
@@ -49,12 +50,11 @@ class JurnalharianResource extends Resource
                             ->required()
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(today()->format('Y-m-d')) // Format Y-m-d adalah format default untuk value datepicker
+                            ->default(now())
                             ->columnSpan(1),
 
                         Forms\Components\TextInput::make('jh_nomor_jurnal')
                             ->label('NOMOR JURNAL')
-                            ->datalist(Jurnalharian::pluck('jh_nomor_jurnal')->toArray())
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(50)
@@ -68,19 +68,30 @@ class JurnalharianResource extends Resource
 
                 Forms\Components\Section::make('Detail Transaksi')
                     ->schema([
-                        Forms\Components\TextInput::make('jh_code_account')
+                        Forms\Components\Select::make('jh_code_account')
                             ->label('CODE ACCOUNT')
                             ->required()
-                            ->maxLength(20)
-                            ->columnSpan(1),
+                            ->relationship('coa', 'coa_code')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->coa_code} - {$record->coa_name}")
+                            ->searchable(['coa_code', 'coa_name'])
+                            ->preload()
+                            ->columnSpan(1)
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                if ($state) {
+                                    $coa = \App\Models\ChartOfAccount::find($state);
+                                    if ($coa) {
+                                        $set('jh_nama_account', $coa->coa_name);
+                                    }
+                                }
+                            }),
                             
                         Forms\Components\TextInput::make('jh_nama_account')
                             ->label('NAMA ACCOUNT')
-                            ->datalist(Jurnalharian::pluck('jh_nama_account')->toArray())
                             ->required()
                             ->maxLength(100)
                             ->columnSpan(2),
-
+                            
+                            
                         Forms\Components\TextInput::make('jh_code_dept')
                             ->label('CODE DEPT')
                             ->required()
@@ -89,7 +100,6 @@ class JurnalharianResource extends Resource
                             
                         Forms\Components\TextInput::make('jh_departemen')
                             ->label('DEPARTEMEN')
-                            ->datalist(Jurnalharian::pluck('jh_departemen')->toArray())
                             ->required()
                             ->maxLength(100)
                             ->columnSpan(2),
@@ -112,7 +122,6 @@ class JurnalharianResource extends Resource
                             
                         Forms\Components\TextInput::make('jh_pemohon')
                             ->label('PEMOHON')
-                            ->datalist(Jurnalharian::pluck('jh_pemohon')->toArray())
                             ->required()
                             ->maxLength(100)
                             ->columnSpan(2),
@@ -122,7 +131,25 @@ class JurnalharianResource extends Resource
                             ->maxLength(500)
                             ->columnSpanFull(),
                     ])->columns(3),
+                    
+                Forms\Components\Section::make('Validasi Akuntansi')
+                    ->schema([
+                        Forms\Components\Placeholder::make('validation_info')
+                            ->content(function (Forms\Get $get) {
+                                $debit = (float) $get('jh_dr') ?? 0;
+                                $credit = (float) $get('jh_cr') ?? 0;
+                                
+                                if (abs($debit - $credit) > 0.01) {
+                                    return "PERINGATAN: Total debit dan kredit tidak balance! Selisih: " . ($debit - $credit);
+                                }
+                                
+                                return "Valid: Debit dan Kredit balance";
+                            })
+                            ->columnSpanFull(),
+                    ])
+                    ->hidden(fn (Forms\Get $get) => abs(((float) $get('jh_dr') ?? 0) - ((float) $get('jh_cr') ?? 0)) <= 0.01),
             ]);
+
     }
 
     public static function table(Table $table): Table
@@ -137,18 +164,17 @@ class JurnalharianResource extends Resource
 
             Tables\Columns\TextColumn::make('jh_nomor_jurnal')
                 ->label('NOMOR JURNAL')
-
                 ->searchable(),
 
             Tables\Columns\TextColumn::make('jh_nama_account')
                 ->label('NAMA ACCOUNT')
-
-                ->searchable(),
+                ->searchable()
+                ->formatStateUsing(fn (string $state): string => Str::upper($state)),
 
             Tables\Columns\TextColumn::make('jh_departemen')
                 ->label('DEPARTEMEN')
-
-                ->searchable(),
+                ->searchable()
+                ->formatStateUsing(fn (string $state): string => Str::upper($state)),
 
             Tables\Columns\TextColumn::make('jh_dr')
                 ->label('DEBIT')
@@ -164,8 +190,8 @@ class JurnalharianResource extends Resource
 
             Tables\Columns\TextColumn::make('jh_pemohon')
                 ->label('PEMOHON')
-                
-                ->searchable(),
+                ->searchable()
+                ->formatStateUsing(fn (string $state): string => Str::upper($state)),
 
             Tables\Columns\TextColumn::make('created_at')
                 ->label('DIBUAT')
@@ -173,25 +199,45 @@ class JurnalharianResource extends Resource
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
         ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\RestoreAction::make(),
-                Tables\Actions\ForceDeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
-                ]),
-            ])
-            ->defaultSort('jh_tanggal', 'desc')
-            ->striped();
+        ->filters([
+            Tables\Filters\TrashedFilter::make(),
+            Tables\Filters\SelectFilter::make('jh_departemen')
+                ->label('DEPARTEMEN')
+                ->options(fn () => JurnalHarian::query()
+                    ->pluck('jh_departemen', 'jh_departemen')
+                    ->mapWithKeys(fn ($item) => [Str::upper($item) => Str::upper($item)]))
+                ->searchable(),
+            Tables\Filters\Filter::make('jh_tanggal')
+                ->form([
+                    Forms\Components\DatePicker::make('dari_tanggal')
+                        ->label('DARI TANGGAL'),
+                    Forms\Components\DatePicker::make('sampai_tanggal')
+                        ->label('SAMPAI TANGGAL'),
+                ])
+                ->query(function ($query, array $data) {
+                    return $query
+                        ->when($data['dari_tanggal'],
+                            fn ($query) => $query->whereDate('jh_tanggal', '>=', $data['dari_tanggal']))
+                        ->when($data['sampai_tanggal'],
+                            fn ($query) => $query->whereDate('jh_tanggal', '<=', $data['sampai_tanggal']));
+                }),
+        ])
+        ->actions([
+            Tables\Actions\ViewAction::make(),
+            Tables\Actions\EditAction::make(),
+            Tables\Actions\DeleteAction::make(),
+            Tables\Actions\RestoreAction::make(),
+            Tables\Actions\ForceDeleteAction::make(),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\ForceDeleteBulkAction::make(),
+                Tables\Actions\RestoreBulkAction::make(),
+            ]),
+        ])
+        ->defaultSort('jh_tanggal', 'desc')
+        ->striped();
     }
 
     public static function getRelations(): array

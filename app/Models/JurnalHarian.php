@@ -133,23 +133,6 @@ public function setJhCodeDeptAttribute($value){
         }
     }
 
-    public static function getAvailableYears()
-{
-    $driver = config('database.default');
-    
-    if ($driver === 'sqlite') {
-        return self::query()
-            ->selectRaw("strftime('%Y', jh_tanggal) as year")
-            ->distinct()
-            ->pluck('year', 'year');
-    } else { // MySQL/MariaDB/PostgreSQL
-        return self::query()
-            ->selectRaw('YEAR(jh_tanggal) as year')
-            ->distinct()
-            ->pluck('year', 'year');
-    }
-}
-
 
 
 
