@@ -17,6 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Enums\MaxWidth;
 
 class AdminportalPanelProvider extends PanelProvider
 {
@@ -26,9 +27,24 @@ class AdminportalPanelProvider extends PanelProvider
             ->default()
             ->id('adminportal')
             ->path('adminportal')
+            // ->spa()
+            ->maxContentWidth(MaxWidth::Full)
+            // ->simplePageMaxContentWidth(MaxWidth::Small)
+            // ->sidebarCollapsibleOnDesktop()
+            // ->collapsedSidebarWidth('9rem')
+            ->topNavigation()
+            // ->extraTopbarAttributes([
+            //     'class' => 'shadow-md',
+            //     'style' => 'background-color: var(--primary-500);', // Gunakan variabel CSS
+            // ])
+            ->darkMode(false)
+
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#211C84'),
+                'secondary' => Color::hex('#3A36AE'),
+                'accent' => Color::hex('#FFD700'),
+                'gray' => Color::Gray,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -37,8 +53,8 @@ class AdminportalPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

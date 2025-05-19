@@ -44,6 +44,22 @@ class JurnalharianResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make('Informasi Jurnal')
+                ->extraAttributes([
+                    'style' => '
+                        margin-top: 20px;
+                        margin-bottom: 100px;
+                        filter: drop-shadow(0 0 0.5rem #3A36AE);                    
+                        background-color: #3674B5;
+                        
+                        
+                        
+                        border-radius: 10px;
+    
+                        @media (prefers-color-scheme: dark) {
+                            background-color: #5eead4;
+                            
+                        }'
+                ])
                     ->schema([
                         Forms\Components\DatePicker::make('jh_tanggal')
                             ->label('TANGGAL')
@@ -52,22 +68,6 @@ class JurnalharianResource extends Resource
                             ->displayFormat('d/m/Y')
                             ->default(now())
                             ->columnSpan(1),
-
-                        Forms\Components\TextInput::make('jh_nomor_jurnal')
-                            ->label('NOMOR JURNAL')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(50)
-                            ->columnSpan(1),
-                            
-                        Forms\Components\TextInput::make('jh_nomor_dokumen')
-                            ->label('NOMOR DOKUMEN')
-                            ->maxLength(50)
-                            ->columnSpan(1),
-                    ])->columns(3),
-
-                Forms\Components\Section::make('Detail Transaksi')
-                    ->schema([
                         Forms\Components\Select::make('jh_code_account')
                             ->label('CODE ACCOUNT')
                             ->required()
@@ -84,25 +84,6 @@ class JurnalharianResource extends Resource
                                     }
                                 }
                             }),
-                            
-                        Forms\Components\TextInput::make('jh_nama_account')
-                            ->label('NAMA ACCOUNT')
-                            ->required()
-                            ->maxLength(100)
-                            ->columnSpan(2),
-                            
-                            
-                        Forms\Components\TextInput::make('jh_code_dept')
-                            ->label('CODE DEPT')
-                            ->required()
-                            ->maxLength(20)
-                            ->columnSpan(1),
-                            
-                        Forms\Components\TextInput::make('jh_departemen')
-                            ->label('DEPARTEMEN')
-                            ->required()
-                            ->maxLength(100)
-                            ->columnSpan(2),
 
                         Forms\Components\TextInput::make('jh_dr')
                             ->label('DEBIT (DR)')
@@ -119,10 +100,50 @@ class JurnalharianResource extends Resource
                             ->prefix('Rp ')
                             ->default(0)
                             ->columnSpan(1),
+
+                        
+                    ])->columns(5),
+
+                Forms\Components\Section::make('Detail Transaksi')
+                    ->schema([
+                        Forms\Components\TextInput::make('jh_nama_account')
+                            ->label('NAMA TRANSAKSI')
+                            
+                            ->maxLength(100)
+                            ->columnSpan(2),
+                        Forms\Components\TextInput::make('jh_nomor_jurnal')
+                            ->label('NOMOR JURNAL')
+                            
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(50)
+                            ->columnSpan(1),
+                            
+                        Forms\Components\TextInput::make('jh_nomor_dokumen')
+                            ->label('NOMOR DOKUMEN')
+                            ->maxLength(50)
+                            ->columnSpan(1),
+                        
+                            
+                        
+                            
+                            
+                        Forms\Components\TextInput::make('jh_code_dept')
+                            ->label('CODE DEPT')
+                            
+                            ->maxLength(20)
+                            ->columnSpan(1),
+                            
+                        Forms\Components\TextInput::make('jh_departemen')
+                            ->label('DEPARTEMEN')
+                            
+                            ->maxLength(100)
+                            ->columnSpan(2),
+
+                        
                             
                         Forms\Components\TextInput::make('jh_pemohon')
                             ->label('PEMOHON')
-                            ->required()
+                            
                             ->maxLength(100)
                             ->columnSpan(2),
 
