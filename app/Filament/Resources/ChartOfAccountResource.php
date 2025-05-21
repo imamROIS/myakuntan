@@ -57,11 +57,13 @@ class ChartOfAccountResource extends Resource
                         ->maxLength(50)
                         ->columnSpan(1),
                         
-                    Forms\Components\TextInput::make('coa_category')
+                        Forms\Components\Select::make('coa_category')
                         ->label('KATEGORI AKUN')
-                        ->datalist(ChartOfAccount::pluck('coa_category')->toArray())
+                        ->options([
+                            'AKTIVA' => 'AKTIVA',
+                            'PASIVA' => 'PASIVA',  
+                        ])
                         ->required()
-                        ->maxLength(50)
                         ->columnSpan(1),
                         
                     Forms\Components\Toggle::make('increase_on_debit')

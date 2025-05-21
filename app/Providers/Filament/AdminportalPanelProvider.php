@@ -18,9 +18,18 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Enums\MaxWidth;
+use App\Filament\Widgets\BalanceSheetReport;
+
 
 class AdminportalPanelProvider extends PanelProvider
 {
+    public function widgets(): array
+{
+    return [
+        BalanceSheetReport::class,
+    ];
+}
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -55,6 +64,7 @@ class AdminportalPanelProvider extends PanelProvider
             ->widgets([
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
+                BalanceSheetReport::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -78,5 +88,6 @@ class AdminportalPanelProvider extends PanelProvider
         // ... resource lainnya
     ];
 }
+
 
 }
