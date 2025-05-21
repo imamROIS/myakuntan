@@ -29,23 +29,23 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
         });
-        Schema::create('account_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('type_name');
-            $table->string('type_code')->unique();
-            $table->boolean('increase_on_debit')->default(true);
-            $table->text('description')->nullable();
-            $table->timestamps();
-        });
+        // Schema::create('account_types', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('type_name');
+        //     $table->string('type_code')->unique();
+        //     $table->boolean('increase_on_debit')->default(true);
+        //     $table->text('description')->nullable();
+        //     $table->timestamps();
+        // });
         
-        Schema::create('account_categories', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('account_type_id')->constrained();
-            $table->string('category_name');
-            $table->string('category_code')->unique();
-            $table->text('description')->nullable();
-            $table->timestamps();
-        });
+        // Schema::create('account_categories', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->foreignId('account_type_id')->constrained();
+        //     $table->string('category_name');
+        //     $table->string('category_code')->unique();
+        //     $table->text('description')->nullable();
+        //     $table->timestamps();
+        // });
     }
 
     /**
