@@ -53,38 +53,47 @@ class Jurnalharian extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    // Boot method untuk auto-fill created_by dan updated_by
+    // UPDATE credit dan debit // Boot method untuk auto-fill created_by dan updated_by
     protected static function boot()
     {
         parent::boot();
-
+    
         static::creating(function ($model) {
             if (auth()->check()) {
                 $model->created_by = auth()->id();
             }
         });
-
+    
         static::updating(function ($model) {
             if (auth()->check()) {
                 $model->updated_by = auth()->id();
             }
         });
+    
         static::created(function ($jurnal) {
             $jurnal->updateCoaBalance();
+            $jurnal->coa?->updateDebitCreditBalances();
         });
-
+    
         static::updated(function ($jurnal) {
             $jurnal->updateCoaBalance();
+            $jurnal->coa?->updateDebitCreditBalances();
         });
-
+    
         static::deleted(function ($jurnal) {
             $jurnal->reverseCoaBalance();
+            $jurnal->coa?->updateDebitCreditBalances();
         });
-
+    
         static::restored(function ($jurnal) {
             $jurnal->updateCoaBalance();
+            $jurnal->coa?->updateDebitCreditBalances();
         });
     }
+    
+
+    // Boot method untuk auto-fill created_by dan updated_by
+    
 
     // format tanggal indonesia
     public function getJhTanggalFormattedAttribute()

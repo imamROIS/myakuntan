@@ -3,6 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use  App\Observers\ChartOfAccountObserver;
+use App\Models\ChartOfAccount;
+use App\Models\Jurnalharian;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,29 +24,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+        ChartOfAccount::observe(\App\Observers\ChartOfAccountObserver::class);
         
     }
 }
 
-class JurnalHarianObserver
-{
-    public function created(JurnalHarian $jurnal)
-    {
-        $jurnal->updateCoaBalance();
-    }
 
-    public function updated(JurnalHarian $jurnal)
-    {
-        $jurnal->updateCoaBalance();
-    }
-
-    public function deleted(JurnalHarian $jurnal)
-    {
-        $jurnal->reverseCoaBalance();
-    }
-
-    public function restored(JurnalHarian $jurnal)
-    {
-        $jurnal->updateCoaBalance();
-    }
-}

@@ -71,6 +71,24 @@ class ChartOfAccountResource extends Resource
                         ->default(true)
                         ->helperText('Centang jika akun ini bertambah nilainya di debit (seperti aset/beban)')
                         ->columnSpan(1),
+                    
+                    Forms\Components\TextInput::make('coa_debit')
+                        ->label('DEBIT')
+                        ->numeric()
+                        ->inputMode('decimal')
+                        ->prefix('Rp ')
+                        ->default(0)
+                        ->disabled()
+                        ->columnSpan(1),
+                    Forms\Components\TextInput::make('coa_credit')
+                        ->label('CREDIT')
+                        ->numeric()
+                        ->inputMode('decimal')
+                        ->prefix('Rp ')
+                        ->default(0)
+                        ->disabled()
+                        ->columnSpan(1),
+                    
                         
                     Forms\Components\TextInput::make('opening_balance')
                         ->label('SALDO AWAL')

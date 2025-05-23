@@ -15,6 +15,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 use Filament\Actions\ReplicateAction;
 
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Actions; // Gunakan Actions untuk grup tombol
+use Filament\Forms\Components\Actions\Action; // Gunakan Action untuk tombol individual
+use Filament\Support\Enums\Alignment; // Untuk alignment Actions
+
 
 
 use Filament\Forms\Components\TextInput;
@@ -42,24 +47,11 @@ class JurnalharianResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
+        ->live() // Tambahkan ini
             ->schema([
                 Forms\Components\Section::make('Informasi Jurnal')
-                ->extraAttributes([
-                    'style' => '
-                        margin-top: 20px;
-                        margin-bottom: 100px;
-                        filter: drop-shadow(0 0 0.5rem #3A36AE);                    
-                        background-color: #3674B5;
-                        
-                        
-                        
-                        border-radius: 10px;
-    
-                        @media (prefers-color-scheme: dark) {
-                            background-color: #5eead4;
-                            
-                        }'
-                ])
+                ->description('The items you have selected for purchase')                
+                ->extraAttributes(['class' => 'bg-white dark:bg-gray-800 shadow-md rounded-lg'])
                     ->schema([
                         Forms\Components\DatePicker::make('jh_tanggal')
                             ->label('TANGGAL')
@@ -71,19 +63,16 @@ class JurnalharianResource extends Resource
                         Forms\Components\Select::make('jh_code_account')
                             ->label('CODE ACCOUNT')
                             ->required()
-                            ->relationship('coa', 'coa_code')
+                            ->relationship(
+                                name: 'coa', 
+                                titleAttribute: 'coa_code',
+                                modifyQueryUsing: fn (Builder $query) => $query->where('is_active', true)->orderBy('coa_code')
+                            )
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->coa_code} - {$record->coa_name}")
                             ->searchable(['coa_code', 'coa_name'])
                             ->preload()
                             ->columnSpan(1)
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                if ($state) {
-                                    $coa = \App\Models\ChartOfAccount::find($state);
-                                    if ($coa) {
-                                        $set('jh_nama_account', $coa->coa_name);
-                                    }
-                                }
-                            }),
+                            ->live(), // Tambahkan live untuk real-time update
 
                         Forms\Components\TextInput::make('jh_dr')
                             ->label('DEBIT (DR)')
@@ -105,6 +94,9 @@ class JurnalharianResource extends Resource
                     ])->columns(5),
 
                 Forms\Components\Section::make('Detail Transaksi')
+                    
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         Forms\Components\TextInput::make('jh_nama_account')
                             ->label('NAMA TRANSAKSI')
@@ -151,6 +143,7 @@ class JurnalharianResource extends Resource
                             ->label('KETERANGAN')
                             ->maxLength(500)
                             ->columnSpanFull(),
+                        
                     ])->columns(3),
                     
                 Forms\Components\Section::make('Validasi Akuntansi')
@@ -169,7 +162,7 @@ class JurnalharianResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->hidden(fn (Forms\Get $get) => abs(((float) $get('jh_dr') ?? 0) - ((float) $get('jh_cr') ?? 0)) <= 0.01),
-            ]);
+            ]); 
 
     }
 
@@ -271,10 +264,9 @@ class JurnalharianResource extends Resource
     public static function getPages(): array
     {
         return [
-           'index' => Pages\ListJurnalHarians::route('/'),
-            'create' => Pages\CreateJurnalHarian::route('/create'),
-                
-            'edit' => Pages\EditJurnalHarian::route('/{record}/edit'),
+           'index' => Pages\ListJurnalharians::route('/'),
+            'create' => Pages\CreateJurnalharian::route('/create'),
+            'edit' => Pages\EditJurnalharian::route('/{record}/edit'),
         ];
     }
 

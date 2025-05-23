@@ -22,6 +22,8 @@ class ChartOfAccount extends Model
         'coa_type',
         'coa_category',
         'increase_on_debit',
+        'coa_debit',
+        'coa_credit',
         'opening_balance',
         'current_balance',
         'is_active',
@@ -32,7 +34,9 @@ class ChartOfAccount extends Model
         'opening_balance' => 'decimal:2',
         'current_balance' => 'decimal:2',
         'is_active' => 'boolean',
-        'increase_on_debit' => 'boolean'
+        'increase_on_debit' => 'boolean',
+        'coa_debit' => 'decimal:2',
+        'coa_credit' => 'decimal:2'
     ];
 
     public function jurnals()
@@ -78,5 +82,34 @@ class ChartOfAccount extends Model
     public function setCoaCategoryAttribute($value){
         $this->attributes['coa_category'] = strtoupper($value);
     }
+
+
+// Tambahkan method untuk update coa_debit dan coa_credit
+    public function updateDebitCreditBalances()
+    {
+        $totals = $this->jurnals()
+            ->selectRaw('SUM(jh_dr) as total_debit, SUM(jh_cr) as total_credit')
+            ->first();
+
+        $this->coa_debit = $totals->total_debit ?? 0;
+        $this->coa_credit = $totals->total_credit ?? 0;
+    
+        $this->save();
+    }
+
+    // Di model ChartOfAccount.php
+public function getBalanceDifferenceAttribute()
+{
+    return abs($this->coa_debit - $this->coa_credit);
+}
+
+public function getBalanceStatusAttribute()
+{
+    return $this->coa_debit == $this->coa_credit 
+        ? 'balanced' 
+        : ($this->coa_debit > $this->coa_credit ? 'debit_larger' : 'credit_larger');
+}
+
+
 
 }

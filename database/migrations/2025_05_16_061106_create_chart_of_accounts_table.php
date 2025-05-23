@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('chart_of_accounts', function (Blueprint $table) {
             $table->id();
-            $table->string('coa_code')->unique();
+            $table->string('coa_code');
             $table->string('coa_name');
              // Ubah enum menjadi string biasa untuk kustomisasi user
             $table->string('coa_type'); // Bukan enum lagi
@@ -21,7 +21,8 @@ return new class extends Migration
     
             // Tambahkan field untuk menentukan sifat akun
             $table->boolean('increase_on_debit')->default(true);
-                    
+            $table->decimal('coa_debit', 15, 2)->default(0);
+            $table->decimal('coa_credit', 15, 2)->default(0);
             $table->decimal('opening_balance', 15, 2)->default(0);
             $table->decimal('current_balance', 15, 2)->default(0);
             $table->boolean('is_active')->default(true);
@@ -29,23 +30,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
         });
-        // Schema::create('account_types', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->string('type_name');
-        //     $table->string('type_code')->unique();
-        //     $table->boolean('increase_on_debit')->default(true);
-        //     $table->text('description')->nullable();
-        //     $table->timestamps();
-        // });
-        
-        // Schema::create('account_categories', function (Blueprint $table) {
-        //     $table->id();
-        //     $table->foreignId('account_type_id')->constrained();
-        //     $table->string('category_name');
-        //     $table->string('category_code')->unique();
-        //     $table->text('description')->nullable();
-        //     $table->timestamps();
-        // });
+       
     }
 
     /**

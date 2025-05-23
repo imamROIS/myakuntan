@@ -98,6 +98,12 @@ class JurnalsRelationManager extends RelationManager
                         }
                     }),
             ])
+            ->groups([
+                Tables\Grouping\Group::make('jh_tanggal')
+                    ->label('Per Tanggal')
+                    ->collapsible(),
+            ])
+            ->defaultGroup('jh_tanggal')
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 // Tables\Actions\ViewAction::make()
