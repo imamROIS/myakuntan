@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
-        ChartOfAccount::observe(\App\Observers\ChartOfAccountObserver::class);
+        // ChartOfAccount::observe(\App\Observers\ChartOfAccountObserver::class);
         
     }
 }

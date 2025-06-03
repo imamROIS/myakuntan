@@ -19,6 +19,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Enums\MaxWidth;
 use App\Filament\Widgets\BalanceSheetReport;
+use App\Filament\Widgets\CashFlowWidget;
 
 
 class AdminportalPanelProvider extends PanelProvider
@@ -65,6 +66,7 @@ class AdminportalPanelProvider extends PanelProvider
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
                 BalanceSheetReport::class,
+                CashFlowWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

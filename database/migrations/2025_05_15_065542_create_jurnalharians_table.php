@@ -13,9 +13,6 @@ return new class extends Migration
     {
         Schema::create('jurnalharians', function (Blueprint $table) {
             $table->id();
-
-            
-            // Field utama
             $table->date('jh_tanggal');
             $table->string('jh_nomor_jurnal')->nullable();
             $table->string('jh_nomor_dokumen')->nullable();
@@ -27,12 +24,8 @@ return new class extends Migration
             $table->decimal('jh_cr', 15, 2)->default(0);
             $table->text('jh_keterangan')->nullable();
             $table->string('jh_pemohon');
-            
-            // Tracking user
-            $table->foreignId('created_by')->constrained('users')->onDelete('set null');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
-            
-            // Timestamps dan soft delete
             $table->timestamps();
             $table->softDeletes();
         });
