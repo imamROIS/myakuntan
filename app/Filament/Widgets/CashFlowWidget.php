@@ -15,14 +15,16 @@ class CashFlowWidget extends Widget
     protected int|string|array $columnSpan = 'full';
 
     // Filter properties
-    public $period = 'monthly';
-    public $month;
-    public $year;
-    public $startDate;
-    public $endDate;
+    // Properti untuk menentukan periode laporan
+    public $period = 'monthly'; // Default: bulanan
+    public $month; // Bulan yang dipilih
+    public $year; // Tahun yang dipilih
+    public $startDate; // Tanggal mulai (untuk periode custom)
+    public $endDate; // Tanggal akhir (untuk periode custom)
 
     public function mount(): void
 {
+     // Set default bulan dan tahun ke bulan dan tahun sekarang
     $this->month = (int)Carbon::now()->format('m'); // Konversi ke integer
     $this->year = (int)Carbon::now()->format('Y'); // Konversi ke integer
     $this->endDate = Carbon::now()->format('Y-m-d');
@@ -30,10 +32,13 @@ class CashFlowWidget extends Widget
 
     public function updatedPeriod($value): void
     {
+         // Reset filter tanggal jika beralih ke mode bulanan
         if ($value === 'monthly') {
             $this->startDate = null;
             $this->endDate = null;
-        } elseif ($value === 'custom') {
+        } 
+        // Reset filter bulan/tahun jika beralih ke mode custom
+        elseif ($value === 'custom') {
             $this->month = null;
             $this->year = null;
         }
@@ -45,6 +50,7 @@ class CashFlowWidget extends Widget
     public function getOperatingActivities(): Collection
 {
     // Pastikan kode akun kas/bank benar
+    // Mencari akun kas/bank yang akan digunakan
     $cashAccounts = ChartOfAccount::where('coa_type', 'KAS/BANK')
         ->orWhere('coa_name', 'like', '%kas%')
         ->orWhere('coa_name', 'like', '%bank%')
@@ -55,10 +61,14 @@ class CashFlowWidget extends Widget
         return collect();
     }
 
-    $query = Jurnalharian::whereIn('jh_code_account', $cashAccounts)
+    // Query transaksi jurnal harian yang terkait dengan:
+    // 1. Akun kas/bank
+    // 2. Termasuk kategori PENDAPATAN, BEBAN, atau mengandung kata 'operasional'
+    // 3. Tambahkan ->orWhere untuk kategori lainya yang ingin ditambahkan
+        $query = Jurnalharian::whereIn('jh_code_account', $cashAccounts)
         ->whereHas('coa', function($q) {
-            $q->where('coa_category', 'PENDAPATAN')
-              ->orWhere('coa_category', 'BEBAN')
+            $q->where('coa_category', 'AKTIVA')
+              ->orWhere('coa_category', 'PASIVA')
               ->orWhere('coa_name', 'like', '%operasional%');
         });
 
@@ -100,7 +110,8 @@ class CashFlowWidget extends Widget
         
         $query = Jurnalharian::whereIn('jh_code_account', $cashAccounts)
             ->whereHas('coa', function($q) {
-                $q->where('coa_category', 'AKTIVA TETAP');
+                $q->where('coa_category', 'ASET')
+                ->orWhere('coa_category', 'INVESTASI');
             });
 
         $this->applyDateFilters($query);
@@ -122,12 +133,13 @@ class CashFlowWidget extends Widget
      */
     public function getFinancingActivities(): Collection
     {
-        $cashAccounts = ChartOfAccount::where('coa_type', 'KAS/BANK')->pluck('coa_code');
+        $cashAccounts = ChartOfAccount::where('coa_category', 'PASIVA')->pluck('coa_code');
         
         $query = Jurnalharian::whereIn('jh_code_account', $cashAccounts)
             ->whereHas('coa', function($q) {
-                $q->where('coa_category', 'MODAL')
-                  ->orWhere('coa_category', 'KEWAJIBAN');
+                $q->where('coa_type', 'MODAL')
+                  ->orWhere('coa_type', 'HUTANG')
+                  ->orWhere('coa_type', 'PIUTANG');
             });
 
         $this->applyDateFilters($query);
@@ -185,7 +197,7 @@ class CashFlowWidget extends Widget
     return ChartOfAccount::where('coa_type', 'KAS/BANK')
         ->orWhere('coa_name', 'like', '%kas%')
         ->orWhere('coa_name', 'like', '%bank%')
-        ->sum('opening_balance') ?? 0;
+        ->sum('current_balance') ?? 0;
 }
 
     public function getEndingBalance(): float
