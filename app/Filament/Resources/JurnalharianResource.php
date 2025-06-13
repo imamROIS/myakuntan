@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Filament\Resources;
-
+use Filament\Tables\Actions\Action;
 use App\Filament\Resources\JurnalharianResource\Pages;
 use App\Filament\Resources\JurnalharianResource\RelationManagers;
 use App\Models\Jurnalharian;
@@ -17,7 +17,7 @@ use Filament\Actions\ReplicateAction;
 
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Actions; // Gunakan Actions untuk grup tombol
-use Filament\Forms\Components\Actions\Action; // Gunakan Action untuk tombol individual
+// use Filament\Forms\Components\Actions\Action; // Gunakan Action untuk tombol individual
 use Filament\Support\Enums\Alignment; // Untuk alignment Actions
 
 
@@ -29,6 +29,11 @@ use Filament\Forms\Components\Select;
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+
+// use Filament\Tables\Actions\Action;
+
+use Barryvdh\DomPDF\Facade\Pdf; // Tambahkan ini untuk PDF generation
+use Illuminate\Support\Facades\Blade; // Tambahkan ini untuk rendering blade
 
 class JurnalharianResource extends Resource
 {
@@ -242,12 +247,53 @@ class JurnalharianResource extends Resource
             Tables\Actions\DeleteAction::make(),
             Tables\Actions\RestoreAction::make(),
             Tables\Actions\ForceDeleteAction::make(),
+            Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function ($record) {
+                        // Data yang akan dikirim ke view PDF
+                        $data = [
+                            'record' => $record,
+                            'title' => 'Jurnal Harian - ' . $record->jh_nomor_jurnal,
+                        ];
+                        
+                        // Generate PDF
+                        $pdf = Pdf::loadHTML(
+                            Blade::render('pdf.jurnalharian', $data)
+                        );
+                        
+                        // Download PDF
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            "jurnal-harian-{$record->jh_nomor_jurnal}.pdf"
+                        );
+                    }),
         ])
         ->bulkActions([
             Tables\Actions\BulkActionGroup::make([
                 Tables\Actions\DeleteBulkAction::make(),
                 Tables\Actions\ForceDeleteBulkAction::make(),
                 Tables\Actions\RestoreBulkAction::make(),
+                Tables\Actions\BulkAction::make('exportPdf')
+                        ->label('Export Selected to PDF')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('success')
+                        ->action(function ($records) {
+                            $data = [
+                                'records' => $records,
+                                'title' => 'Multiple Jurnal Harian',
+                            ];
+                            
+                            $pdf = Pdf::loadHTML(
+                                Blade::render('pdf.jurnalharian-multiple', $data)
+                            );
+                            
+                            return response()->streamDownload(
+                                fn () => print($pdf->output()),
+                                "jurnal-harian-multiple.pdf"
+                            );
+                        }),
             ]),
         ])
         ->defaultSort('jh_tanggal', 'desc')
