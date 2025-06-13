@@ -15,6 +15,7 @@ class BalanceSheetReport extends Widget implements Forms\Contracts\HasForms
 
     protected static string $view = 'filament.widgets.balance-sheet-report';
     protected int | string | array $columnSpan = 'full';
+    protected static ?int $sort = 2;
 
     public ?string $selectedYear = null;
     public ?string $startDate = null;

@@ -20,16 +20,21 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Enums\MaxWidth;
 use App\Filament\Widgets\BalanceSheetReport;
 use App\Filament\Widgets\CashFlowWidget;
+use App\Filament\Widgets\CreateJurnalButton;
 
 
 class AdminportalPanelProvider extends PanelProvider
 {
-    public function widgets(): array
-{
-    return [
-        BalanceSheetReport::class,
-    ];
-}
+    protected function getActions(): array
+    {
+        return [
+            Action::make('Open Settings')
+                ->label('Settings')
+                ->icon('heroicon-o-cog')
+                ->action('openSettingsModal'), // Define your modal opening method
+        ];
+    }
+
 
     public function panel(Panel $panel): Panel
     {
@@ -63,10 +68,10 @@ class AdminportalPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
+                CreateJurnalButton::class,
                 BalanceSheetReport::class,
                 CashFlowWidget::class,
+                
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -83,13 +88,7 @@ class AdminportalPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
-    protected function getResources(): array
-{
-    return [
-        \App\Filament\Resources\JurnalHarianResource::class,
-        // ... resource lainnya
-    ];
-}
+  
 
 
 }
