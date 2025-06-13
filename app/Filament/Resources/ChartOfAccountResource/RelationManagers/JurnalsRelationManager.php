@@ -12,7 +12,11 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Models\Jurnalharian;
 use App\Models\ChartOfAccount;
 use App\Filament\Resources\JurnalharianResource;
-            //app/Filament/Resources/JurnalharianResource.php        
+            //app/Filament/Resources/JurnalharianResource.php      
+            
+use Filament\Tables\Actions\Action;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Blade;
 
 
 class JurnalsRelationManager extends RelationManager
@@ -111,13 +115,85 @@ class JurnalsRelationManager extends RelationManager
                     
                 // Tables\Actions\EditAction::make()
                 //     ->url(fn ($record) => \App\Filament\Resources\JurnalharianResource::getUrl('edit', ['record' => $record])),
+                 // Tambahkan action export PDF
+            // Export single transaction
+            Action::make('exportPdf')
+                ->label('Export PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function ($record) {
+                    $data = [
+                        'record' => $record,
+                        'coa' => $this->getOwnerRecord(),
+                        'title' => 'Transaksi Jurnal - ' . $record->jh_nomor_jurnal,
+                    ];
+                    
+                    $pdf = Pdf::loadHTML(
+                        Blade::render('pdf.jurnal-coa', $data)
+                    );
+                    
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        "jurnal-{$record->jh_nomor_jurnal}.pdf"
+                    );
+                }),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->url(fn ($livewire) => \App\Filament\Resources\JurnalharianResource::getUrl('create', [
                         'jh_code_account' => $livewire->ownerRecord->coa_code
                     ])),
+
+                   // Export all transactions
+            Action::make('exportAllPdf')
+                ->label('Export Semua')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('primary')
+                ->action(function () {
+                    $coa = $this->getOwnerRecord();
+                    $records = $coa->jurnals()->get(); // Menggunakan relasi langsung
+                    
+                    $data = [
+                        'records' => $records,
+                        'coa' => $coa,
+                        'title' => 'Semua Transaksi Akun - ' . $coa->coa_code,
+                    ];
+                    
+                    $pdf = Pdf::loadHTML(
+                        Blade::render('pdf.jurnal-coa-multiple', $data)
+                    );
+                    
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        "transaksi-akun-{$coa->coa_code}.pdf"
+                    );
+                }),
             ])
+        //     ->bulkActions([
+        //     // Export selected transactions
+        //     Action::make('exportSelectedPdf')
+        //         ->label('Export Selected')
+        //         ->icon('heroicon-o-document-arrow-down')
+        //         ->color('primary')
+        //         ->action(function ($records) {
+        //             $coa = $this->getOwnerRecord();
+                    
+        //             $data = [
+        //                 'records' => $records,
+        //                 'coa' => $coa,
+        //                 'title' => 'Transaksi Terpilih Akun - ' . $coa->coa_code,
+        //             ];
+                    
+        //             $pdf = Pdf::loadHTML(
+        //                 Blade::render('pdf.jurnal-coa-multiple', $data)
+        //             );
+                    
+        //             return response()->streamDownload(
+        //                 fn () => print($pdf->output()),
+        //                 "transaksi-terpilih-akun-{$coa->coa_code}.pdf"
+        //             );
+        //         }),
+        // ])
             ->defaultSort('jh_tanggal', 'desc');
     }
 }

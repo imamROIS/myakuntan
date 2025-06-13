@@ -1,5 +1,8 @@
 <x-filament::widget>
     <x-filament::card>
+        <div>
+            <h1>Balance Sheet Report</h1>
+        </div>
         <form wire:submit.prevent="submit">
             {{ $this->form }}
         </form>

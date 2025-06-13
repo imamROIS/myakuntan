@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Blade;
 
 class ChartOfAccount extends Model
 {
@@ -39,6 +41,7 @@ class ChartOfAccount extends Model
     {
         return $this->hasMany(Jurnalharian::class, 'jh_code_account', 'coa_code');
     }
+
 
     public function getNormalBalanceAttribute()
     {

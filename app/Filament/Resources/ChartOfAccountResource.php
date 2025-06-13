@@ -14,6 +14,12 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
+
+use Filament\Tables\Actions\Action;
+use Barryvdh\DomPDF\Facade\Pdf; // Tambahkan ini untuk PDF generation
+use Illuminate\Support\Facades\Blade; // Tambahkan ini untuk rendering blade
+
+
 class ChartOfAccountResource extends Resource
 {
     protected static ?string $model = ChartOfAccount::class;
@@ -171,12 +177,53 @@ class ChartOfAccountResource extends Resource
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\ForceDeleteAction::make(),
                 Tables\Actions\RestoreAction::make(),
+                
+            // Tambahkan action export PDF
+            Action::make('exportPdf')
+                ->label('Export PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->action(function ($record) {
+                    $data = [
+                        'record' => $record,
+                        'title' => 'Chart of Account - ' . $record->coa_code,
+                    ];
+                    
+                    $pdf = Pdf::loadHTML(
+                        Blade::render('pdf.chart-of-account', $data)
+                    );
+                    
+                    return response()->streamDownload(
+                        fn () => print($pdf->output()),
+                        "chart-of-account-{$record->coa_code}.pdf"
+                    );
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
+                     // Bulk export PDF
+                Action::make('exportPdfBulk')
+                    ->label('Export Selected to PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function ($records) {
+                        $data = [
+                            'records' => $records,
+                            'title' => 'Multiple Chart of Accounts',
+                        ];
+                        
+                        $pdf = Pdf::loadHTML(
+                            Blade::render('pdf.chart-of-account-multiple', $data)
+                        );
+                        
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            "chart-of-accounts-".now()->format('YmdHis').".pdf"
+                        );
+                    }),
                 ]),
             ])
             ->defaultSort('coa_code')
