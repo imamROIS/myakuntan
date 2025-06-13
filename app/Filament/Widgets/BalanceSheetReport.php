@@ -8,6 +8,9 @@ use App\Models\Jurnalharian;
 use Illuminate\Support\Collection;
 use Filament\Forms;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Blade;
+use Filament\Forms\Components\Actions\Action;
 
 class BalanceSheetReport extends Widget implements Forms\Contracts\HasForms
 {
@@ -57,6 +60,13 @@ class BalanceSheetReport extends Widget implements Forms\Contracts\HasForms
                 ->label('Tampilkan Detail Debit/Kredit')
                 ->reactive()
                 ->afterStateUpdated(fn () => $this->dispatch('refreshWidget')),
+            Forms\Components\Actions::make([
+                Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->color('success')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action('exportToPdf')
+            ])
         ];
     }
 
@@ -153,5 +163,32 @@ class BalanceSheetReport extends Widget implements Forms\Contracts\HasForms
         }
         
         return $query->sum('jh_cr');
+    }
+
+     public function exportToPdf()
+    {
+        $data = [
+            'startDate' => $this->startDate,
+            'endDate' => $this->endDate,
+            'showDetails' => $this->showDetails,
+            'aktiva' => $this->getFilteredChartOfAccounts()->filter(fn ($_, $key) => str_contains(strtolower($key), 'aktiva')),
+            'pasiva' => $this->getFilteredChartOfAccounts()->filter(fn ($_, $key) => in_array(strtolower($key), ['pasiva', 'kewajiban', 'modal'])),
+            'totalAktiva' => $this->getTotalAktiva(),
+            'totalPasiva' => $this->getTotalPasiva(),
+            'isBalanced' => $this->isBalanced(),
+            'balanceDifference' => $this->getBalanceDifference(),
+            'totalDebit' => $this->getTotalDebit(),
+            'totalCredit' => $this->getTotalCredit(),
+            'getTotalByCategory' => fn($group) => $this->getTotalByCategory($group),
+        ];
+
+        $pdf = Pdf::loadHTML(
+            Blade::render('pdf.balance-sheet', $data)
+        )->setPaper('a4', 'portrait');
+
+        return response()->streamDownload(
+            fn () => print($pdf->output()),
+            "balance-sheet-{$this->startDate}-to-{$this->endDate}.pdf"
+        );
     }
 }
