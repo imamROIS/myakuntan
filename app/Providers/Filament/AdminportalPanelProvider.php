@@ -19,53 +19,42 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Enums\MaxWidth;
 use App\Filament\Widgets\BalanceSheetReport;
-use App\Filament\Widgets\CashFlowWidget;
+// use App\Filament\Widgets\CashFlowWidget;
 
 
 
 class AdminportalPanelProvider extends PanelProvider
 {
-    
-
-
-
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
+            
             ->id('adminportal')
+            ->default()
             ->path('adminportal')
-            // ->spa()
-            ->maxContentWidth(MaxWidth::Full)
-            // ->simplePageMaxContentWidth(MaxWidth::Small)
-            // ->sidebarCollapsibleOnDesktop()
-            // ->collapsedSidebarWidth('9rem')
-            ->topNavigation()
-            // ->extraTopbarAttributes([
-            //     'class' => 'shadow-md',
-            //     'style' => 'background-color: var(--primary-500);', // Gunakan variabel CSS
-            // ])
-            ->darkMode(false)
-
+            // ->topNavigation()
+            
             ->login()
+            ->darkMode(false)
+            ->font('Inter')
             ->colors([
                 'primary' => Color::hex('#211C84'),
                 'secondary' => Color::hex('#3A36AE'),
                 'accent' => Color::hex('#FFD700'),
                 'gray' => Color::Gray,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                
-                BalanceSheetReport::class,
-                CashFlowWidget::class,
+                Widgets\BalanceSheetReport::class,
+                // CashFlowWidget::class,
                 
             ])
+            ->navigation()
            
             
             ->middleware([

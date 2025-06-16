@@ -1,7 +1,5 @@
 <?php
 
-
-use App\Models\Anggota;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;

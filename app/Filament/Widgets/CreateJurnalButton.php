@@ -17,7 +17,7 @@ use Filament\Support\Enums\IconPosition;
 class CreateJurnalButton extends Widget
 {
     protected static string $view = 'filament.widgets.create-jurnal-button';
-protected static ?int $sort = 1;
+protected static ?int $sort = 100;
 
     // Method yang akan dipanggil dari view
     public function createJurnal()
